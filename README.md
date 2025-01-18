@@ -1,2 +1,2 @@
 # AIPlat
-AI Integrated business workflow service
+AI Integrated business workflow platform
