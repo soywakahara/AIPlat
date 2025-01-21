@@ -1,34 +1,34 @@
 import React from 'react';
-import { Drawer, List, ListItem, ListItemText, Box, Toolbar, Button } from '@mui/material';
+import { Drawer, List, ListItem, ListItemButton, ListItemText, Box, Button } from '@mui/material';
 
 const drawerWidth = 240;
 
 function Sidebar() {
   return (
     <Drawer
-      variant="permanent" // 常時固定
+      variant="permanent"
       sx={{
         width: drawerWidth,
         flexShrink: 0,
         [`& .MuiDrawer-paper`]: {
           width: drawerWidth,
           boxSizing: 'border-box',
+          top: '64px',
+          height: 'calc(100% - 64px)'
         },
       }}
     >
-      <Toolbar />
-      {/** Toolbarを挿入することで、AppBarと高さを揃える */}
       <Box sx={{ overflow: 'auto', display: 'flex', flexDirection: 'column', height: '100%' }}>
         <List sx={{ flex: 1 }}>
-          <ListItem button>
+          <ListItemButton>
             <ListItemText primary="データ操作" />
-          </ListItem>
-          <ListItem button>
+          </ListItemButton>
+          <ListItemButton>
             <ListItemText primary="アプリ操作" />
-          </ListItem>
-          <ListItem button>
+          </ListItemButton>
+          <ListItemButton>
             <ListItemText primary="ワークフロー" />
-          </ListItem>
+          </ListItemButton>
         </List>
         <Box sx={{ p: 2 }}>
           <Button variant="outlined" fullWidth sx={{ mb: 1 }}>

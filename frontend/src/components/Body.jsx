@@ -1,10 +1,7 @@
 import React from 'react';
 import { Box, Toolbar, Typography } from '@mui/material';
+import WorkflowTabs from './WorkflowTabs';
 
-/**
- * MUIでAppBar/Drawerを固定した場合、
- * メインコンテンツはAppBarの高さ + Drawerの幅を考慮してスタイルを当てる必要がある.
- */
 const drawerWidth = 240;
 
 function Body() {
@@ -17,14 +14,13 @@ function Body() {
         marginLeft: `${drawerWidth}px`,
       }}
     >
-      {/** Toolbarでヘッダー分のスペースを空ける */}
       <Toolbar />
       <Typography variant="h5" gutterBottom>
-        メインコンテンツ
+        ワークフロー管理
       </Typography>
-      <Typography>
-        ここにワークフロー一覧や詳細画面等を表示していきます。
-      </Typography>
+      <Box>
+        <WorkflowTabs />
+      </Box>
     </Box>
   );
 }
