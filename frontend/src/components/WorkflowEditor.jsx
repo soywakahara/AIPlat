@@ -5,61 +5,62 @@ function createStep(id, name) {
   return { id, name };
 }
 
-// “縦線 + ＋ボタン + 縦線”部分をまとめたコンポーネント
-function Connector({ onClick }) {
+// “縦線 + ＋ボタン + 縦線”部分（下の縦線はオプション）
+function Connector({ onClick, showBottomLine = true }) {
   return (
-    <Box 
-      // 縦方向に並べる
-      sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        mb: 2 // 下方向に少し余白
+        mb: 2,
       }}
     >
       {/* 上の縦線 */}
-      <Box 
-        sx={{ 
-          width: '2px', 
-          height: '20px', 
-          backgroundColor: '#ccc' 
-        }} 
+      <Box
+        sx={{
+          width: '2px',
+          height: '20px',
+          backgroundColor: '#99E391',
+        }}
       />
       {/* ＋ボタン */}
-      <Button 
-        variant="contained" 
-        size="small" 
+      <Button
+        variant="contained"
+        size="small"
         onClick={onClick}
-        sx={{ 
-          borderRadius: '50%', 
-          minWidth: '40px', 
-          height: '40px', 
-          mt: '-2px', // 微調整
-          mb: '-2px'
+        sx={{
+          borderRadius: '50%',
+          minWidth: '30px',
+          height: '30px',
+          backgroundColor: '#99E391',
+          mt: '-2px',
+          mb: '-2px',
         }}
       >
         ＋
       </Button>
-      {/* 下の縦線 */}
-      <Box 
-        sx={{ 
-          width: '2px', 
-          height: '20px', 
-          backgroundColor: '#ccc' 
-        }} 
-      />
+      {/* 下の縦線はオプショナル */}
+      {showBottomLine && (
+        <Box
+          sx={{
+            width: '2px',
+            height: '20px',
+            backgroundColor: '#99E391',
+          }}
+        />
+      )}
     </Box>
   );
 }
 
 export default function WorkflowEditor() {
   const [steps, setSteps] = useState([
-    createStep('1', '手動起動'),
-    createStep('2', 'CSVを操作する'),
+    createStep('1', '手動起動')
   ]);
 
+  // index番目の下にステップを追加
   const handleAddStep = (index) => {
-    // “どの場所に追加するか”の例: index番目の後ろに新ステップ
     const newId = (steps.length + 1).toString();
     const newStep = createStep(newId, `ステップ${newId}`);
     const newSteps = [...steps];
@@ -71,30 +72,37 @@ export default function WorkflowEditor() {
     <Box
       component="main"
       sx={{
-        // サイドバー + ヘッダー分だけマージン
-        marginLeft: '240px',
-        marginTop: '64px',
+        // サイドバー + ヘッダー分のマージンは仮
+        marginLeft: '120px',
+        marginTop: '100px',
         p: 3,
       }}
     >
-      <Typography variant="h5" gutterBottom>
-        ワークフロータイトル
+      <Typography variant="h5" gutterBottom sx={{ mb: 4 }}>
+        ワークフロー
       </Typography>
 
-      {/* ステップを順番に表示し、下にConnectorを表示 */}
-      {steps.map((step, index) => (
-        <React.Fragment key={step.id}>
-          <Card sx={{ mb: 2 }}>
-            <CardContent>
-              <Typography variant="subtitle1">{step.name}</Typography>
-              {/* 他にも「設定」「編集」ボタン等があれば置く */}
-            </CardContent>
-          </Card>
+      {steps.map((step, index) => {
+        // 次のステップがあるかどうかで、下の線を出すか決める
+        const isLast = index === steps.length - 1;
 
-          {/* 各ステップの下に、縦線＋プラスボタンを表示 */}
-          <Connector onClick={() => handleAddStep(index)} />
-        </React.Fragment>
-      ))}
+        return (
+          <React.Fragment key={step.id}>
+            <Card sx={{ mb: 2 }}>
+              <CardContent>
+                <Typography variant="subtitle1">{step.name}</Typography>
+              </CardContent>
+            </Card>
+
+            <Connector
+              // index+1 の位置に新ステップを挿入
+              onClick={() => handleAddStep(index)}
+              // 最後のステップなら下の線を表示しない
+              showBottomLine={!isLast}
+            />
+          </React.Fragment>
+        );
+      })}
     </Box>
   );
 }
