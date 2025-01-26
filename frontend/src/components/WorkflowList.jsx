@@ -1,36 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { Box, Card, CardContent, Typography, Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { Link } from 'react-router-dom';
+import { WorkflowContext } from '../contexts/WorkflowContext';
 
 /**
  * ワークフロー一覧を表示するコンポーネント。
  * 今は仮のデータを使い、後でフェッチ処理を追加予定。
  */
 
-// 仮のモックデータ
-const mockWorkflows = [
-  { id: 'wf001', name: 'ワークフローA', status: 'open', createdAt: '2024-07-01' },
-  { id: 'wf002', name: 'ワークフローB', status: 'closed', createdAt: '2024-07-02' },
-  { id: 'wf003', name: 'ワークフローC', status: 'open', createdAt: '2024-07-03' },
-];
-
 export default function WorkflowList({ statusFilter }) {
-  const [workflows, setWorkflows] = useState([]);
+  const { workflows, workflowsFetchError, isWorkflowsFetching } = useContext(WorkflowContext);
 
-  useEffect(() => {
-    // TODO: fetch from backend
-    // e.g. fetch('/api/workflows') 
-    //   .then(res => res.json())
-    //   .then(data => setWorkflows(data))
-    //   .catch(err => console.error(err));
+  // ステータスでフィルタリング
+  const filteredWorkflows = workflows.filter(
+    (wf) => statusFilter === 'all' || wf.status === statusFilter
+  );
 
-    // 今はモックデータに絞り込みして設定
-    const filtered = mockWorkflows.filter(
-      (wf) => statusFilter === 'all' || wf.status === statusFilter
-    );
-    setWorkflows(filtered);
-  }, [statusFilter]);
+  if (isWorkflowsFetching) {
+    return <Typography>読み込み中...</Typography>;
+  }
+
+  if (workflowsFetchError) {
+    return <Typography color="error">{workflowsFetchError}</Typography>;
+  }
 
   return (
     <Box>
@@ -48,7 +41,7 @@ export default function WorkflowList({ statusFilter }) {
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {workflows.map((wf) => (
+        {filteredWorkflows.map((wf) => (
           <Card key={wf.id} variant="outlined">
             <CardContent>
               <Typography variant="h6">{wf.name}</Typography>
