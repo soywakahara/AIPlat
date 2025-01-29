@@ -1,9 +1,13 @@
 import React from 'react';
 import { Drawer, List, ListItem, ListItemButton, ListItemText, Box, Button } from '@mui/material';
+import { Link, useLocation } from 'react-router-dom';
 
 const drawerWidth = 240;
 
 function Sidebar() {
+  const location = useLocation();
+  const isWorkflowActive = location.pathname === '/';
+
   return (
     <Drawer
       variant="permanent"
@@ -26,7 +30,19 @@ function Sidebar() {
           <ListItemButton>
             <ListItemText primary="アプリ操作" />
           </ListItemButton>
-          <ListItemButton>
+          <ListItemButton
+            component={Link}
+            to="/"
+            selected={isWorkflowActive}
+            sx={{
+              '&.Mui-selected': {
+                backgroundColor: 'rgba(0, 0, 0, 0.08)',
+              },
+              '&.Mui-selected:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.12)',
+              },
+            }}
+          >
             <ListItemText primary="ワークフロー" />
           </ListItemButton>
         </List>

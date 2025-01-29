@@ -1,0 +1,39 @@
+{
+ "workflowId": "1",
+ "workflowName": "ワークフローA", 
+ "workflowStatus": "open", 
+ "workflowCreatedAt": "2024-07-01",
+ "workflowTrigger": "manual",
+ "workflowActions": [
+    {
+    "actionId": "1", 
+    "actionName": "トリガー",
+    "actionType": "data_load",
+    "actionStatus": "completed", 
+    "actionCreatedAt": "2024-07-01",
+    "actionResult": "success",
+    "actionConfig": {
+    }
+    },
+    {
+    "actionId": "2", 
+    "actionName": "アクションA", 
+    "actionType": "action_type_1",
+    "actionStatus": "running", 
+    "actionCreatedAt": "2024-07-01",
+    "actionResult": "failed",
+    "actionConfig": {
+    }
+    },
+    {
+    "actionId": "3", 
+    "actionName": "アクションB", 
+    "actionType": "action_type_2",
+    "actionStatus": "waiting", 
+    "actionCreatedAt": "2024-07-01",
+    "actionResult": "pending",
+    "actionConfig": {
+    }
+    }
+]
+}
