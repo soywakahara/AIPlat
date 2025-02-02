@@ -13,43 +13,38 @@ import {
   ListItemButton,
   ListItemText
 } from '@mui/material';
+import CSVOperationConfig from './config/operations/CSVOperationConfig';
+//import OcrReadingConfig from './config/actions/OcrReadingConfig';
+import { operationConfigMap, appConfigMap } from './config/configMap';
   
 /**
  * 2段階:
  *   stage=1: アクション/アプリ選択画面
  *   stage=2: 設定フォーム
  */
-export default function ActionAppModal({ open, step, onClose, onSave }) {
+export default function ActionAppModal({ open, action, onClose, onSave }) {
   // stage=1 or 2
   const [stage, setStage] = useState(1);
   // 選択されたアクション/アプリ
-  const [selectedAction, setSelectedAction] = useState('');
+  const [selectedOperation, setSelectedOperation] = useState('');
   const [selectedApp, setSelectedApp] = useState('');
 
-  // ステップ名や設定
-  const [stepName, setStepName] = useState('');
-  const [configOption, setConfigOption] = useState(''); // 仮の設定項目
-
   useEffect(() => {
-    if (!step) {
+    if (!action) {
       // 新規モードの初期値
       setStage(1);
-      setSelectedAction('');
+      setSelectedOperation('');
       setSelectedApp('');
-      setStepName('');
-      setConfigOption('');
     } else {
-      // 既存ステップ編集モード: すでに action/app/config があればセット
+      // 既存ステップ編集モード: すでに operation/app があればセット
       setStage(2); // 既にどれかが選択済みと仮定して2ページ目を開く
-      setSelectedAction(step.action || '');
-      setSelectedApp(step.app || '');
-      setStepName(step.name || '');
-      setConfigOption(step.config?.option || '');
+      setSelectedOperation(action.operation || '');
+      setSelectedApp(action.app || '');
     }
-  }, [step]);
+  }, [action]);
 
   // アクション一覧 (仮)
-  const actionList = [
+  const operationList = [
     'CSV操作',
     'メール送信',
     'AI解析',
@@ -65,8 +60,8 @@ export default function ActionAppModal({ open, step, onClose, onSave }) {
   ];
 
   // アクションorアプリを選択すると stage2 へ
-  const handleSelectAction = (actionName) => {
-    setSelectedAction(actionName);
+  const handleSelectOperation = (operationName) => {
+    setSelectedOperation(operationName);
     setStage(2); 
   };
   const handleSelectApp = (appName) => {
@@ -75,39 +70,59 @@ export default function ActionAppModal({ open, step, onClose, onSave }) {
   };
 
   const handleClose = () => {
+    // 全ての状態をリセット
+    setStage(1);
+    setSelectedOperation('');
+    setSelectedApp('');
     onClose();
+  };
+
+  const handleBack = () => {
+    setStage(1);
+    setSelectedOperation('');
+    setSelectedApp('');
   };
 
   const handleSave = () => {
     // 最終的に新ステップor更新ステップの情報を親に返す
-    const updatedStep = {
-      id: step?.id || new Date().getTime().toString(), // 新規の場合は適当に一意ID
-      name: stepName || '新ステップ',
-      action: selectedAction,
+    const updatedAction = {
+      id: action?.id || new Date().getTime().toString(), // step → action
+      name: action?.name || '新アクション', // step → action, '新ステップ' → '新アクション'
+      operation: selectedOperation,
       app: selectedApp,
-      config: {
-        option: configOption,
-        // 他に必要な設定をここに
-      },
+      config: action?.config || {}, // step → action
     };
-    onSave(updatedStep);
+    onSave(updatedAction);
+    setStage(1); // 保存後にモーダルを閉じてリセット
   };
+
+  // stage=2 のレンダリング部分に追加するため、一例として「getSelectedConfigComponent」を定義
+  function getSelectedConfigComponent(operation, app) {
+    // まずアクション用マップで探す
+    const FoundOperationComponent = operationConfigMap[operation] || null;
+    if (FoundOperationComponent) {
+      return FoundOperationComponent;
+    }
+    // 見つからなかった場合はアプリ用マップを探す（必要に応じて順番を逆にしたり、お好みで調整）
+    const FoundAppComponent = appConfigMap[app] || null;
+    return FoundAppComponent;
+  }
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       {stage === 1 && (
         <>
-          <DialogTitle>アクションまたはアプリを選択</DialogTitle>
+          <DialogTitle>オペレーションまたはアプリを選択</DialogTitle>
           <DialogContent dividers>
             <Typography variant="body2" sx={{ mb: 1 }}>
               どちらかを選んでください
             </Typography>
-            <Typography variant="subtitle1">アクション</Typography>
+            <Typography variant="subtitle1">オペレーション</Typography>
             <List>
-              {actionList.map((actionName) => (
-                <ListItem key={actionName} disablePadding>
-                  <ListItemButton onClick={() => handleSelectAction(actionName)}>
-                    <ListItemText primary={actionName} />
+              {operationList.map((operationName) => (
+                <ListItem key={operationName} disablePadding>
+                  <ListItemButton onClick={() => handleSelectOperation(operationName)}>
+                    <ListItemText primary={operationName} />
                   </ListItemButton>
                 </ListItem>
               ))}
@@ -134,27 +149,31 @@ export default function ActionAppModal({ open, step, onClose, onSave }) {
           <DialogTitle>設定画面</DialogTitle>
           <DialogContent dividers>
             <Typography variant="body2" sx={{ mb: 1 }}>
-              選択したアクション/アプリに対して必要な設定を行ってください。
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              アクション: {selectedAction || 'なし'}, アプリ: {selectedApp || 'なし'}
+              選択したオペレーション/アプリに対して必要な設定を行ってください。
             </Typography>
             <TextField
-              label="ステップ名"
-              value={stepName}
-              onChange={(e) => setStepName(e.target.value)}
+              label="アクション名"
+              defaultValue={action?.name || ''}
+              onChange={(e) => {
+                if (action) action.name = e.target.value;
+              }}
               fullWidth
               sx={{ mb: 2 }}
             />
-            <TextField
-              label="オプション"
-              value={configOption}
-              onChange={(e) => setConfigOption(e.target.value)}
-              fullWidth
-            />
+            {(() => {
+              const SelectedConfigComponent = getSelectedConfigComponent(selectedOperation, selectedApp);
+              return SelectedConfigComponent ? (
+                <SelectedConfigComponent
+                  config={action?.config || {}}
+                  setConfig={(newConfig) => {
+                    if (action) action.config = newConfig;
+                  }}
+                />
+              ) : null;
+            })()}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setStage(1)} color="inherit">
+            <Button onClick={handleBack} color="inherit">
               戻る
             </Button>
             <Button onClick={handleSave} variant="contained">

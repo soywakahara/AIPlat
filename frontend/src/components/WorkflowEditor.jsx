@@ -5,12 +5,12 @@ import { Box, Card, CardContent, Typography, Button } from '@mui/material';
 import { WorkflowContext } from '../contexts/WorkflowContext';
 import ActionAppModal from './ActionAppModal';
 
-function createStep(id, name) {
+function createAction(id, name) {
   // アクションやアプリ、設定項目もここで持たせる例
-  return { id, name, action: null, app: null, config: {} };
+  return { id, name, operation: null, app: null, config: {} };
 }
 
-// “縦線 + ＋ボタン + 縦線”部分（下の縦線はオプション）
+// "縦線 + ＋ボタン + 縦線"部分（下の縦線はオプション）
 function Connector({ onClick, showBottomLine = true }) {
   return (
     <Box
@@ -68,69 +68,74 @@ export default function WorkflowEditor({ isNew }) {
     isWorkflowDetailLoading 
   } = useContext(WorkflowContext);
   
-  const [steps, setSteps] = useState([]);
+  const [actions, setActions] = useState([]);
   // モーダル開閉用
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // 「何番目の後にステップを挿入するか」を保持する
+  // "何番目の後にステップを挿入するか"を保持する
   const [targetIndex, setTargetIndex] = useState(null);
 
   // 既存ステップを編集する場合に備えて、編集対象ステップも保持
-  const [editingStep, setEditingStep] = useState(null);
+  const [editingAction, setEditingAction] = useState(null);
 
   useEffect(() => {
     if (isNew) {
       // 新規ワークフロー作成時
       setSelectedWorkflow(null);
-      setSteps([createStep('1', '手動起動')]);
+      setActions([createAction('1', '手動起動')]);
     } else if (workflowId) {
       // 既存ワークフロー編集時: モックデータで置き換え中
       const mockWorkflow = {
         id: workflowId,
         name: workflowId,
-        steps: [
-          createStep('1', '手動起動'),
-          createStep('2', 'データ処理'),
-          createStep('3', '完了通知'),
+        actions: [
+          createAction('1', '手動起動'),
+          createAction('2', 'データ処理'),
+          createAction('3', '完了通知'),
         ],
       };
       setSelectedWorkflow(mockWorkflow);
-      setSteps(mockWorkflow.steps);
+      setActions(mockWorkflow.actions);
     }
   }, [workflowId, isNew, setSelectedWorkflow]);
 
-  // 「＋」ボタンを押したとき、新規ステップ追加用にモーダルを開く
-  const handleAddStepModal = (index) => {
+  // モーダルを閉じる際の処理を修正
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    // モーダルを閉じた時点で編集状態をリセット
+    setEditingAction(null);
+    setTargetIndex(null);
+  };
+
+  // "＋"ボタンを押したとき、新規ステップ追加用にモーダルを開く
+  const handleAddActionModal = (index) => {
     setTargetIndex(index);
-    setEditingStep(null);   // 新規作成なので既存はnull
+    setEditingAction(null);
     setIsModalOpen(true);
   };
 
   // もし既存ステップをクリックして編集したい場合
-  const handleEditStepModal = (step, index) => {
+  const handleEditActionModal = (action, index) => {
     setTargetIndex(index);
-    setEditingStep(step);
+    setEditingAction(action);
     setIsModalOpen(true);
   };
 
   // モーダルで「決定」されたときに呼ばれる
-  const handleModalSave = (newStepData) => {
-    if (editingStep) {
+  const handleModalSave = (newActionData) => {
+    if (editingAction) {
       // 既存ステップを上書き更新する場合
-      setSteps((prev) =>
-        prev.map((s, i) =>
-          s.id === editingStep.id ? { ...s, ...newStepData } : s
+      setActions((prev) =>
+        prev.map((a) =>
+          a.id === editingAction.id ? { ...a, ...newActionData } : a
         )
       );
     } else {
       // 新規ステップ追加
-      const newSteps = [...steps];
-      // targetIndex の後ろに新ステップを挿入
-      newSteps.splice(targetIndex + 1, 0, newStepData);
-      setSteps(newSteps);
+      const newActions = [...actions];
+      newActions.splice(targetIndex + 1, 0, newActionData);
+      setActions(newActions);
     }
-    setIsModalOpen(false);
-    setEditingStep(null);
-    setTargetIndex(null);
+    handleModalClose(); // 保存後にモーダルを閉じてリセット
   };
 
   if (isWorkflowDetailLoading) {
@@ -150,22 +155,22 @@ export default function WorkflowEditor({ isNew }) {
         {isNew ? '新規ワークフロー' : selectedWorkflow?.name}
       </Typography>
 
-      {steps.map((step, index) => {
-        const isLast = index === steps.length - 1;
+      {actions.map((action, index) => {
+        const isLast = index === actions.length - 1;
         return (
-          <React.Fragment key={step.id}>
+          <React.Fragment key={action.id}>
             <Card 
               sx={{ mb: 2, cursor: 'pointer' }}
-              onClick={() => handleEditStepModal(step, index)}
+              onClick={() => handleEditActionModal(action, index)}
             >
               <CardContent>
                 <Typography variant="subtitle1">
-                  {step.name}
+                  {action.name}
                 </Typography>
               </CardContent>
             </Card>
             <Connector
-              onClick={() => handleAddStepModal(index)}
+              onClick={() => handleAddActionModal(index)}
               showBottomLine={!isLast}
             />
           </React.Fragment>
@@ -174,8 +179,8 @@ export default function WorkflowEditor({ isNew }) {
 
       <ActionAppModal
         open={isModalOpen}
-        step={editingStep}         // nullなら新規モード
-        onClose={() => setIsModalOpen(false)}
+        action={editingAction}
+        onClose={handleModalClose}
         onSave={handleModalSave}
       />
     </Box>
