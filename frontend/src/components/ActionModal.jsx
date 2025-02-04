@@ -22,12 +22,15 @@ import { operationConfigMap, appConfigMap } from './config/configMap';
  *   stage=1: アクション/アプリ選択画面
  *   stage=2: 設定フォーム
  */
-export default function ActionAppModal({ open, action, onClose, onSave }) {
+export default function ActionModal({ open, action, onClose, onSave }) {
   // stage=1 or 2
   const [stage, setStage] = useState(1);
   // 選択されたアクション/アプリ
   const [selectedOperation, setSelectedOperation] = useState('');
   const [selectedApp, setSelectedApp] = useState('');
+  // 一時的な編集状態を管理
+  const [tempActionName, setTempActionName] = useState('');
+  const [tempConfig, setTempConfig] = useState({});
 
   useEffect(() => {
     if (!action) {
@@ -35,11 +38,15 @@ export default function ActionAppModal({ open, action, onClose, onSave }) {
       setStage(1);
       setSelectedOperation('');
       setSelectedApp('');
+      setTempActionName('');
+      setTempConfig({});
     } else {
       // 既存ステップ編集モード: すでに operation/app があればセット
       setStage(2); // 既にどれかが選択済みと仮定して2ページ目を開く
-      setSelectedOperation(action.operation || '');
+      setSelectedOperation(action.actionType || '');
       setSelectedApp(action.app || '');
+      setTempActionName(action.actionName || '');
+      setTempConfig(action.actionConfig || {});
     }
   }, [action]);
 
@@ -74,6 +81,8 @@ export default function ActionAppModal({ open, action, onClose, onSave }) {
     setStage(1);
     setSelectedOperation('');
     setSelectedApp('');
+    setTempActionName('');
+    setTempConfig({});
     onClose();
   };
 
@@ -81,19 +90,24 @@ export default function ActionAppModal({ open, action, onClose, onSave }) {
     setStage(1);
     setSelectedOperation('');
     setSelectedApp('');
+    // 戻るボタンを押しても一時的な設定は保持
   };
 
   const handleSave = () => {
-    // 最終的に新ステップor更新ステップの情報を親に返す
+    // 保存用のデータを親に返すときも sampleWorkflowData.json に準拠
     const updatedAction = {
-      id: action?.id || new Date().getTime().toString(), // step → action
-      name: action?.name || '新アクション', // step → action, '新ステップ' → '新アクション'
-      operation: selectedOperation,
-      app: selectedApp,
-      config: action?.config || {}, // step → action
+      // 既存のアクションがあればそれを使い、新規なら適当IDを生成
+      actionId: action?.actionId || new Date().getTime().toString(),
+      actionName: tempActionName || '新アクション',
+      actionType: selectedOperation || action?.actionType || 'operation_unknown',
+      actionStatus: action?.actionStatus || 'draft',
+      actionCreatedAt: action?.actionCreatedAt || new Date().toISOString().split('T')[0],
+      actionAPI: action?.actionAPI || '',
+      outputURL: action?.outputURL || '',
+      actionConfig: tempConfig,  // 一時的な設定を保存時に反映
     };
     onSave(updatedAction);
-    setStage(1); // 保存後にモーダルを閉じてリセット
+    setStage(1);
   };
 
   // stage=2 のレンダリング部分に追加するため、一例として「getSelectedConfigComponent」を定義
@@ -152,22 +166,22 @@ export default function ActionAppModal({ open, action, onClose, onSave }) {
               選択したオペレーション/アプリに対して必要な設定を行ってください。
             </Typography>
             <TextField
-              label="アクション名"
-              defaultValue={action?.name || ''}
-              onChange={(e) => {
-                if (action) action.name = e.target.value;
-              }}
+              label="アクション名 (actionName)"
+              value={tempActionName}  // 一時的な状態を使用
+              onChange={(e) => setTempActionName(e.target.value)}
               fullWidth
               sx={{ mb: 2 }}
             />
             {(() => {
-              const SelectedConfigComponent = getSelectedConfigComponent(selectedOperation, selectedApp);
+              const SelectedConfigComponent = getSelectedConfigComponent(
+                // ここでは selectedOperation = actionType に相当
+                selectedOperation || action?.actionType,
+                selectedApp || ''
+              );
               return SelectedConfigComponent ? (
                 <SelectedConfigComponent
-                  config={action?.config || {}}
-                  setConfig={(newConfig) => {
-                    if (action) action.config = newConfig;
-                  }}
+                  config={tempConfig}  // 一時的な設定を渡す
+                  setConfig={setTempConfig}  // 一時的な設定を更新
                 />
               ) : null;
             })()}

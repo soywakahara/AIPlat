@@ -3,11 +3,19 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Card, CardContent, Typography, Button } from '@mui/material';
 import { WorkflowContext } from '../contexts/WorkflowContext';
-import ActionAppModal from './ActionAppModal';
+import ActionModal from './ActionModal';
 
-function createAction(id, name) {
-  // アクションやアプリ、設定項目もここで持たせる例
-  return { id, name, operation: null, app: null, config: {} };
+function createAction(actionId, actionName) {
+  return {
+    actionId,
+    actionName,
+    actionType: '',       // operation に相当するフィールド
+    actionStatus: 'draft',
+    actionCreatedAt: new Date().toISOString().split('T')[0],
+    actionAPI: '',
+    outputURL: '',
+    actionConfig: {},
+  };
 }
 
 // "縦線 + ＋ボタン + 縦線"部分（下の縦線はオプション）
@@ -81,20 +89,23 @@ export default function WorkflowEditor({ isNew }) {
     if (isNew) {
       // 新規ワークフロー作成時
       setSelectedWorkflow(null);
-      setActions([createAction('1', '手動起動')]);
+      setActions([createAction('1', '手動起動アクション')]);
     } else if (workflowId) {
       // 既存ワークフロー編集時: モックデータで置き換え中
       const mockWorkflow = {
-        id: workflowId,
-        name: workflowId,
-        actions: [
-          createAction('1', '手動起動'),
-          createAction('2', 'データ処理'),
-          createAction('3', '完了通知'),
+        workflowId,
+        workflowName: `MockName-${workflowId}`,
+        workflowStatus: 'open',
+        workflowCreatedAt: new Date().toISOString().split('T')[0],
+        workflowTrigger: { triggerType: 'manual' },
+        workflowActions: [
+          createAction('1', '手動起動アクション'),
+          createAction('2', 'データ処理アクション'),
+          createAction('3', '完了通知アクション'),
         ],
       };
       setSelectedWorkflow(mockWorkflow);
-      setActions(mockWorkflow.actions);
+      setActions(mockWorkflow.workflowActions);
     }
   }, [workflowId, isNew, setSelectedWorkflow]);
 
@@ -123,19 +134,21 @@ export default function WorkflowEditor({ isNew }) {
   // モーダルで「決定」されたときに呼ばれる
   const handleModalSave = (newActionData) => {
     if (editingAction) {
-      // 既存ステップを上書き更新する場合
+      // 既存アクションを上書き更新する場合
       setActions((prev) =>
         prev.map((a) =>
-          a.id === editingAction.id ? { ...a, ...newActionData } : a
+          a.actionId === editingAction.actionId
+            ? { ...a, ...newActionData }
+            : a
         )
       );
     } else {
-      // 新規ステップ追加
+      // 新規アクション追加
       const newActions = [...actions];
       newActions.splice(targetIndex + 1, 0, newActionData);
       setActions(newActions);
     }
-    handleModalClose(); // 保存後にモーダルを閉じてリセット
+    handleModalClose();
   };
 
   if (isWorkflowDetailLoading) {
@@ -152,20 +165,20 @@ export default function WorkflowEditor({ isNew }) {
       }}
     >
       <Typography variant="h5" gutterBottom sx={{ mb: 4 }}>
-        {isNew ? '新規ワークフロー' : selectedWorkflow?.name}
+        {isNew ? '新規ワークフロー' : selectedWorkflow?.workflowName}
       </Typography>
 
       {actions.map((action, index) => {
         const isLast = index === actions.length - 1;
         return (
-          <React.Fragment key={action.id}>
+          <React.Fragment key={action.actionId}>
             <Card 
               sx={{ mb: 2, cursor: 'pointer' }}
               onClick={() => handleEditActionModal(action, index)}
             >
               <CardContent>
                 <Typography variant="subtitle1">
-                  {action.name}
+                  {action.actionName}
                 </Typography>
               </CardContent>
             </Card>
@@ -177,7 +190,7 @@ export default function WorkflowEditor({ isNew }) {
         );
       })}
 
-      <ActionAppModal
+      <ActionModal
         open={isModalOpen}
         action={editingAction}
         onClose={handleModalClose}
