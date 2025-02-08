@@ -14,6 +14,7 @@
   import { WorkflowContext } from '../contexts/WorkflowContext';
   import ActionModal from './ActionModal';
   import TriggerModal from './TriggerModal';
+  import DeleteIcon from '@mui/icons-material/Delete';  // この行を追加
 
   function createAction(actionId, actionName) {
     return {
@@ -275,22 +276,24 @@
                       }
                     >
                       <Typography variant="subtitle1">{action.actionName}</Typography>
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 8,
-                          right: 8,
-                          cursor: 'pointer',
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (window.confirm('このアクションを削除してもよろしいですか？')) {
-                            handleDeleteAction(action.actionId);
-                          }
-                        }}
-                      >
-                        <Typography variant="body2">⋮</Typography>
-                      </Box>
+                      {action.actionType !== 'trigger' && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            cursor: 'pointer',
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm('このアクションを削除してもよろしいですか？')) {
+                              handleDeleteAction(action.actionId);
+                            }
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" color="action" />
+                        </Box>
+                      )}
                     </CardContent>
                   </Card>
                   <Connector
