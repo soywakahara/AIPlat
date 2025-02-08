@@ -14,7 +14,7 @@ export default function WorkflowList({ statusFilter }) {
 
   // ステータスでフィルタリング
   const filteredWorkflows = workflows.filter(
-    (wf) => statusFilter === 'all' || wf.status === statusFilter
+    (wf) => statusFilter === 'all' || wf.workflowStatus === statusFilter
   );
 
   if (isWorkflowsFetching) {
@@ -42,17 +42,17 @@ export default function WorkflowList({ statusFilter }) {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {filteredWorkflows.map((wf) => (
-          <Card key={wf.id} variant="outlined">
+          <Card key={wf.workflowId} variant="outlined">
             <CardContent>
-              <Typography variant="h6">{wf.name}</Typography>
+              <Typography variant="h6">{wf.workflowName}</Typography>
               <Typography variant="body2" color="text.secondary">
-                ID: {wf.id}, status: {wf.status}, createdAt: {wf.createdAt}
+                ID: {wf.workflowId}, status: {wf.workflowStatus}, createdAt: {wf.workflowCreatedAt}
               </Typography>
               <Button 
                 variant="contained" 
                 component={Link}
-                to={`/workflow/${wf.id}`}
-                sx={{ mt: 1, /*backgroundColor: '#FF925B' */ }}
+                to={`/workflow/${wf.workflowId}`}
+                sx={{ mt: 1 }}
               >
                 詳細を開く
               </Button>

@@ -3,35 +3,40 @@
  "workflowName": "ワークフローA", 
  "workflowStatus": "open", 
  "workflowCreatedAt": "2024-07-01",
- "workflowTrigger": "manual",
- "workflowActions": [
+  "workflowActions": [
     {
     "actionId": "1", 
     "actionName": "トリガー",
-    "actionType": "data_load",
-    "actionStatus": "completed", 
+    "actionType": "trigger",
+    "actionCategory": "manual",
+    "actionStatus": "", 
     "actionCreatedAt": "2024-07-01",
-    "actionResult": "success",
+    "actiionAPI": "",
+    "outputURL": "",
     "actionConfig": {
     }
     },
     {
     "actionId": "2", 
     "actionName": "アクションA", 
-    "actionType": "action_type_1",
+    "actionType": "operation",
+    "actionCategory": "data_load",
     "actionStatus": "running", 
     "actionCreatedAt": "2024-07-01",
-    "actionResult": "failed",
+    "actionAPI": "",
+    "outputURL": "",
     "actionConfig": {
     }
     },
     {
     "actionId": "3", 
     "actionName": "アクションB", 
-    "actionType": "action_type_2",
+    "actionType": "operation",
+    "actionCategory": "data_load",
     "actionStatus": "waiting", 
     "actionCreatedAt": "2024-07-01",
-    "actionResult": "pending",
+    "actionAPI": "",
+    "outputURL": "",
     "actionConfig": {
     }
     }

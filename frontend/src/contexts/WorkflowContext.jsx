@@ -137,9 +137,47 @@ export const WorkflowProvider = ({ children }) => {
     
     // 一時的にモックデータを使用
     const mockWorkflows = [
-      { id: 'wf001', name: 'ワークフローA', status: 'open', createdAt: '2024-07-01' },
-      { id: 'wf002', name: 'ワークフローB', status: 'closed', createdAt: '2024-07-02' },
-      { id: 'wf003', name: 'ワークフローC', status: 'open', createdAt: '2024-07-03' },
+      {
+        workflowId: 'wf001',
+        workflowName: 'ワークフローA',
+        workflowStatus: 'open',
+        workflowCreatedAt: '2024-07-01',
+        workflowTrigger: {
+          triggerType: 'manual'
+        },
+        workflowActions: [
+          {
+            actionId: '1',
+            actionName: 'ActionX',
+            actionType: 'data_load',
+            actionStatus: 'completed',
+            actionCreatedAt: '2024-07-01',
+            actionAPI: '',
+            outputURL: '',
+            actionConfig: {}
+          }
+        ]
+      },
+      {
+        workflowId: 'wf002',
+        workflowName: 'ワークフローB',
+        workflowStatus: 'closed',
+        workflowCreatedAt: '2024-07-02',
+        workflowTrigger: {
+          triggerType: 'schedule'
+        },
+        workflowActions: []
+      },
+      {
+        workflowId: 'wf003',
+        workflowName: 'ワークフローC',
+        workflowStatus: 'open',
+        workflowCreatedAt: '2024-07-03',
+        workflowTrigger: {
+          triggerType: 'manual'
+        },
+        workflowActions: []
+      },
     ];
     setWorkflows(mockWorkflows);
     setIsWorkflowsFetching(false);
