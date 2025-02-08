@@ -13,12 +13,28 @@
   } from '@mui/material';
   import { WorkflowContext } from '../contexts/WorkflowContext';
   import ActionModal from './ActionModal';
+  import TriggerModal from './TriggerModal';
 
   function createAction(actionId, actionName) {
     return {
       actionId,
       actionName,
-      actionType: '',       // operation に相当するフィールド
+      actionType: 'operation',
+      actionCategory: 'data_load',
+      actionStatus: 'draft',
+      actionCreatedAt: new Date().toISOString().split('T')[0],
+      actionAPI: '',
+      outputURL: '',
+      actionConfig: {},
+    };
+  }
+
+  function createTriggerAction(actionId, actionName) {
+    return {
+      actionId,
+      actionName,
+      actionType: 'trigger',
+      actionCategory: 'manual',
       actionStatus: 'draft',
       actionCreatedAt: new Date().toISOString().split('T')[0],
       actionAPI: '',
@@ -75,6 +91,7 @@
 
     const [actions, setActions] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isTriggerModalOpen, setIsTriggerModalOpen] = useState(false);
     const [targetIndex, setTargetIndex] = useState(null);
     const [editingAction, setEditingAction] = useState(null);
     const [workflowTitle, setWorkflowTitle] = useState('');
@@ -83,7 +100,7 @@
       if (isNew) {
         setSelectedWorkflow(null);
         setWorkflowTitle('');
-        setActions([createAction('1', '手動起動アクション')]);
+        setActions([createTriggerAction('1', 'トリガー')]);
       } else if (workflowId) {
         // モック
         const mockWorkflow = {
@@ -93,7 +110,7 @@
           workflowCreatedAt: new Date().toISOString().split('T')[0],
           workflowTrigger: { triggerType: 'manual' },
           workflowActions: [
-            createAction('1', '手動起動アクション'),
+            createTriggerAction('1', 'トリガー'),
             createAction('2', 'データ処理アクション'),
             createAction('3', '完了通知アクション'),
           ],
@@ -104,10 +121,33 @@
       }
     }, [workflowId, isNew, setSelectedWorkflow]);
 
-    const handleModalClose = () => {
-      setIsModalOpen(false);
+    const handleEditTriggerModal = (action, index) => {
+      setTargetIndex(index);
+      setEditingAction(action);
+      setIsTriggerModalOpen(true);
+    };
+
+    const handleTriggerModalClose = () => {
+      setIsTriggerModalOpen(false);
       setEditingAction(null);
       setTargetIndex(null);
+    };
+
+    const handleTriggerModalSave = (newActionData) => {
+      newActionData.actionType = 'trigger';
+      newActionData.actionCategory = 'manual';
+      if (editingAction) {
+        setActions((prev) =>
+          prev.map((a) =>
+            a.actionId === editingAction.actionId ? { ...a, ...newActionData } : a
+          )
+        );
+      } else {
+        const newActions = [...actions];
+        newActions.splice(targetIndex + 1, 0, newActionData);
+        setActions(newActions);
+      }
+      handleTriggerModalClose();
     };
 
     const handleAddActionModal = (index) => {
@@ -120,6 +160,12 @@
       setTargetIndex(index);
       setEditingAction(action);
       setIsModalOpen(true);
+    };
+
+    const handleModalClose = () => {
+      setIsModalOpen(false);
+      setEditingAction(null);
+      setTargetIndex(null);
     };
 
     const handleModalSave = (newActionData) => {
@@ -221,7 +267,13 @@
                       },
                     }}
                   >
-                    <CardContent onClick={() => handleEditActionModal(action, index)}>
+                    <CardContent 
+                      onClick={() =>
+                        action.actionType === 'trigger'
+                          ? null //handleEditTriggerModal(action, index)
+                          : handleEditActionModal(action, index)
+                      }
+                    >
                       <Typography variant="subtitle1">{action.actionName}</Typography>
                       <Box
                         sx={{
@@ -258,6 +310,12 @@
           action={editingAction}
           onClose={handleModalClose}
           onSave={handleModalSave}
+        />
+        <TriggerModal
+          open={isTriggerModalOpen}
+          action={editingAction}
+          onClose={handleTriggerModalClose}
+          onSave={handleTriggerModalSave}
         />
       </Container>
     );

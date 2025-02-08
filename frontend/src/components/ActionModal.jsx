@@ -41,10 +41,15 @@ export default function ActionModal({ open, action, onClose, onSave }) {
       setTempActionName('');
       setTempConfig({});
     } else {
-      // 既存ステップ編集モード: すでに operation/app があればセット
+      // 既存ステップ編集モード: actionType に応じて actionCategory の値をセット
       setStage(2); // 既にどれかが選択済みと仮定して2ページ目を開く
-      setSelectedOperation(action.actionType || '');
-      setSelectedApp(action.app || '');
+      if (action.actionType === 'operation') {
+        setSelectedOperation(action.actionCategory);
+        setSelectedApp('');
+      } else {
+        setSelectedOperation('');
+        setSelectedApp(action.actionCategory);
+      }
       setTempActionName(action.actionName || '');
       setTempConfig(action.actionConfig || {});
     }
@@ -78,12 +83,12 @@ export default function ActionModal({ open, action, onClose, onSave }) {
 
   const handleClose = () => {
     // 全ての状態をリセット
-    setStage(1);
     setSelectedOperation('');
     setSelectedApp('');
     setTempActionName('');
     setTempConfig({});
     onClose();
+    setStage(1);
   };
 
   const handleBack = () => {
@@ -99,7 +104,8 @@ export default function ActionModal({ open, action, onClose, onSave }) {
       // 既存のアクションがあればそれを使い、新規なら適当IDを生成
       actionId: action?.actionId || new Date().getTime().toString(),
       actionName: tempActionName || '新アクション',
-      actionType: selectedOperation || action?.actionType || 'operation_unknown',
+      actionType: selectedOperation ? 'operation' : 'app',
+      actionCategory: selectedOperation ? selectedOperation : selectedApp,
       actionStatus: action?.actionStatus || 'draft',
       actionCreatedAt: action?.actionCreatedAt || new Date().toISOString().split('T')[0],
       actionAPI: action?.actionAPI || '',
@@ -175,8 +181,8 @@ export default function ActionModal({ open, action, onClose, onSave }) {
             {(() => {
               const SelectedConfigComponent = getSelectedConfigComponent(
                 // ここでは selectedOperation = actionType に相当
-                selectedOperation || action?.actionType,
-                selectedApp || ''
+                selectedOperation,
+                selectedApp
               );
               return SelectedConfigComponent ? (
                 <SelectedConfigComponent
