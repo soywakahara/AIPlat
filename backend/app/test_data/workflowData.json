@@ -1,16 +1,16 @@
-{
+[{
  "workflowId": "1",
  "workflowName": "ワークフローA", 
  "workflowStatus": "open", 
- "workflowCreatedAt": "2024-07-01",
-  "workflowActions": [
+ "workflowCreatedAt": "2025-01-01",
+ "workflowActions": [
     {
     "actionId": "1", 
     "actionName": "トリガー",
     "actionType": "trigger",
     "actionCategory": "manual",
-    "actionStatus": "", 
-    "actionCreatedAt": "2024-07-01",
+    "actionStatus": "waiting", 
+    "actionCreatedAt": "2025-01-02",
     "actiionAPI": "",
     "outputURL": "",
     "actionConfig": {
@@ -18,11 +18,11 @@
     },
     {
     "actionId": "2", 
-    "actionName": "アクションA", 
+    "actionName": "OCR", 
     "actionType": "operation",
-    "actionCategory": "data_load",
-    "actionStatus": "running", 
-    "actionCreatedAt": "2024-07-01",
+    "actionCategory": "OCR",
+    "actionStatus": "waiting", 
+    "actionCreatedAt": "2025-01-03",
     "actionAPI": "",
     "outputURL": "",
     "actionConfig": {
@@ -30,15 +30,15 @@
     },
     {
     "actionId": "3", 
-    "actionName": "アクションB", 
+    "actionName": "summarize", 
     "actionType": "operation",
-    "actionCategory": "data_load",
+    "actionCategory": "summarize",
     "actionStatus": "waiting", 
-    "actionCreatedAt": "2024-07-01",
+    "actionCreatedAt": "2025-01-04",
     "actionAPI": "",
     "outputURL": "",
     "actionConfig": {
     }
     }
 ]
-}
+}]
