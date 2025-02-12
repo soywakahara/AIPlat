@@ -32,6 +32,7 @@ export default function ActionModal({ open, action, onClose, onSave }) {
   const [tempActionName, setTempActionName] = useState('');
   const [tempConfig, setTempConfig] = useState({});
 
+  // actionの変更を監視して初期状態をセット
   useEffect(() => {
     if (!action) {
       // 新規モードの初期値
@@ -41,8 +42,8 @@ export default function ActionModal({ open, action, onClose, onSave }) {
       setTempActionName('');
       setTempConfig({});
     } else {
-      // 既存ステップ編集モード: actionType に応じて actionCategory の値をセット
-      setStage(2); // 既にどれかが選択済みと仮定して2ページ目を開く
+      // 既存ステップ編集モード
+      setStage(2);
       if (action.actionType === 'operation') {
         setSelectedOperation(action.actionCategory);
         setSelectedApp('');
@@ -54,6 +55,30 @@ export default function ActionModal({ open, action, onClose, onSave }) {
       setTempConfig(action.actionConfig || {});
     }
   }, [action]);
+
+  // モーダルが閉じられたときの状態リセット
+  /*
+  useEffect(() => {
+    let timeoutId;
+    if (!open) {
+      // 他の状態は即座にリセット
+      setSelectedOperation('');
+      setSelectedApp('');
+      setTempActionName('');
+      setTempConfig({});
+      
+      // stageの変更のみ遅延させる
+      timeoutId = setTimeout(() => {
+        setStage(1);
+      }, 100);
+    }
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [open]);
+  */
 
   // アクション一覧 (仮)
   const operationList = [
@@ -82,7 +107,6 @@ export default function ActionModal({ open, action, onClose, onSave }) {
   };
 
   const handleClose = () => {
-    // 全ての状態をリセット
     setSelectedOperation('');
     setSelectedApp('');
     setTempActionName('');
@@ -99,9 +123,7 @@ export default function ActionModal({ open, action, onClose, onSave }) {
   };
 
   const handleSave = () => {
-    // 保存用のデータを親に返すときも sampleWorkflowData.json に準拠
     const updatedAction = {
-      // 既存のアクションがあればそれを使い、新規なら適当IDを生成
       actionId: action?.actionId || new Date().getTime().toString(),
       actionName: tempActionName || '新アクション',
       actionType: selectedOperation ? 'operation' : 'app',
@@ -110,10 +132,9 @@ export default function ActionModal({ open, action, onClose, onSave }) {
       actionCreatedAt: action?.actionCreatedAt || new Date().toISOString().split('T')[0],
       actionAPI: action?.actionAPI || '',
       outputURL: action?.outputURL || '',
-      actionConfig: tempConfig,  // 一時的な設定を保存時に反映
+      actionConfig: tempConfig,
     };
     onSave(updatedAction);
-    setStage(1);
   };
 
   // stage=2 のレンダリング部分に追加するため、一例として「getSelectedConfigComponent」を定義

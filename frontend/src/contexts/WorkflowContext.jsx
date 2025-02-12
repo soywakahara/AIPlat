@@ -51,7 +51,7 @@ export const WorkflowProvider = ({ children }) => {
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/workflows/${workflowId}`, {
+      const response = await fetch(`http://localhost:8000/api/workflow/${workflowId}`, {
         signal: controller.signal,
         headers: {
           'Accept': 'application/json',
@@ -104,9 +104,10 @@ export const WorkflowProvider = ({ children }) => {
     }
   };
 
-  const updateWorkflow = async (workflowId, workflowData) => {
+  const upsertWorkflow = async (workflowData) => {
+    console.log("upsertWorkflow", workflowData);
     try {
-      const response = await fetch(`http://localhost:8000/api/workflows/${workflowId}`, {
+      const response = await fetch("http://localhost:8000/api/workflow", {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -119,9 +120,10 @@ export const WorkflowProvider = ({ children }) => {
         throw new Error(`ワークフローの更新に失敗しました (${response.status})`);
       }
 
-      const updatedWorkflow = await response.json();
+      const result = await response.json();
+      const updatedWorkflow = result.workflow;
       setWorkflows(prevWorkflows =>
-        prevWorkflows.map(wf => wf.id === workflowId ? updatedWorkflow : wf)
+        prevWorkflows.map(wf => wf.workflowId === updatedWorkflow.workflowId ? updatedWorkflow : wf)
       );
       return updatedWorkflow;
 
@@ -132,10 +134,9 @@ export const WorkflowProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // TODO: バックエンド実装後に有効化
-    // fetchWorkflows();
-    
+    fetchWorkflows();
     // 一時的にモックデータを使用
+    /*
     const mockWorkflows = [
       {
         workflowId: 'wf001',
@@ -181,6 +182,7 @@ export const WorkflowProvider = ({ children }) => {
     ];
     setWorkflows(mockWorkflows);
     setIsWorkflowsFetching(false);
+    */
   }, []);
 
   const contextValue = {
@@ -193,7 +195,7 @@ export const WorkflowProvider = ({ children }) => {
     fetchWorkflows,
     fetchWorkflowById,
     createWorkflow,
-    updateWorkflow,
+    upsertWorkflow,
   };
 
   return (
