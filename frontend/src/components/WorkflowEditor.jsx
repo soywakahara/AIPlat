@@ -223,7 +223,7 @@ export default function WorkflowEditor({ isNew }) {
       workflowStatus: selectedWorkflow?.workflowStatus || 'draft',
       workflowCreatedAt: selectedWorkflow?.workflowCreatedAt || new Date().toISOString().split('T')[0],
       workflowActions: updatedActions,
-      workflowTrigger: selectedWorkflow?.workflowTrigger || { triggerType: 'manual' }
+      //workflowTrigger: selectedWorkflow?.workflowTrigger || { triggerType: 'manual' }
     };
 
     try {
@@ -260,7 +260,7 @@ export default function WorkflowEditor({ isNew }) {
   };
 
   const handleTitleBlur = () => {
-    handleWorkflowUpdate(workflowTitle);
+    //handleWorkflowUpdate(workflowTitle);
   };
 
   const handleTitleKeyDown = (e) => {
