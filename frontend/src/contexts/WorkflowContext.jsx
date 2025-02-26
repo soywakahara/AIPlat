@@ -94,8 +94,9 @@ export const WorkflowProvider = ({ children }) => {
         throw new Error(`ワークフローの作成に失敗しました (${response.status})`);
       }
 
+      await fetchWorkflows();
+
       const newWorkflow = await response.json();
-      setWorkflows(prevWorkflows => [...prevWorkflows, newWorkflow]);
       return newWorkflow;
 
     } catch (error) {
@@ -120,11 +121,15 @@ export const WorkflowProvider = ({ children }) => {
         throw new Error(`ワークフローの更新に失敗しました (${response.status})`);
       }
 
+      await fetchWorkflows();
+
       const result = await response.json();
       const updatedWorkflow = result.workflow;
-      setWorkflows(prevWorkflows =>
-        prevWorkflows.map(wf => wf.workflowId === updatedWorkflow.workflowId ? updatedWorkflow : wf)
-      );
+
+      if (selectedWorkflow?.workflowId === updatedWorkflow.workflowId) {
+        setSelectedWorkflow(updatedWorkflow);
+      }
+
       return updatedWorkflow;
 
     } catch (error) {

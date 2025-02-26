@@ -45,11 +45,17 @@ export default function ActionModal({ open, action, onClose, onSave }) {
       // 既存ステップ編集モード
       setStage(2);
       if (action.actionType === 'operation') {
-        setSelectedOperation(action.actionCategory);
+        const foundOperation = operationList.find(op => 
+          op.operationCategory === action.actionCategory
+        );
+        setSelectedOperation(foundOperation || '');
         setSelectedApp('');
       } else {
+        const foundApp = appList.find(app => 
+          app.appCategory === action.actionCategory
+        );
         setSelectedOperation('');
-        setSelectedApp(action.actionCategory);
+        setSelectedApp(foundApp || '');
       }
       setTempActionName(action.actionName || '');
       setTempConfig(action.actionConfig || {});
@@ -80,29 +86,71 @@ export default function ActionModal({ open, action, onClose, onSave }) {
   }, [open]);
   */
 
-  // アクション一覧 (仮)
+  // アクション一覧
   const operationList = [
-    'CSV操作',
-    'メール送信',
-    'AI解析',
-    'Slack投稿',
-    'Webhook呼び出し'
+    {
+      operationName: "OCR読み取り",
+      operationCategory: "OCR",
+      apiURL: "http://localhost:8000/api/operation/ocr"
+    },
+    {
+      operationName: "音声文字起こし",
+      operationCategory: "transcribe",
+      apiURL: "http://localhost:8000/api/operation/transcribe"
+    },
+    {
+      operationName: "文書からテキスト抽出",
+      operationCategory: "textExtraction",
+      apiURL: "http://localhost:8000/api/operation/textExtraction"
+    },
+    {
+      operationName: "要約",
+      operationCategory: "summarize",
+      apiURL: "http://localhost:8000/api/operation/summarize"
+    },
+    {
+      operationName: "翻訳",
+      operationCategory: "translate",
+      apiURL: "http://localhost:8000/api/operation/translate"
+    }
   ];
-  // アプリ一覧 (仮)
+
+  // アプリ一覧
   const appList = [
-    'Google Sheets',
-    'Salesforce',
-    'Stripe',
-    'Gmail',
+    {
+      appName: "Gmail",
+      appCategory: "Gmail",
+      apiURL: "http://localhost:8000/api/app/gmail"
+    },
+    {
+      appName: "Google Drive",
+      appCategory: "Google Drive",
+      apiURL: "http://localhost:8000/api/app/googleDrive"
+    },
+    {
+      appName: "Google Calendar",
+      appCategory: "Google Calendar",
+      apiURL: "http://localhost:8000/api/app/googleCalendar"
+    },
+    {
+      appName: "Google Docs",
+      appCategory: "Google Docs",
+      apiURL: "http://localhost:8000/api/app/googleDocs"
+    },
+    {
+      appName: "Salesforce",
+      appCategory: "Salesforce",
+      apiURL: "http://localhost:8000/api/app/salesforce"
+    }
   ];
 
   // アクションorアプリを選択すると stage2 へ
-  const handleSelectOperation = (operationName) => {
-    setSelectedOperation(operationName);
+  const handleSelectOperation = (operation) => {
+    setSelectedOperation(operation);
     setStage(2); 
   };
-  const handleSelectApp = (appName) => {
-    setSelectedApp(appName);
+  const handleSelectApp = (app) => {
+    setSelectedApp(app);
     setStage(2);
   };
 
@@ -127,10 +175,12 @@ export default function ActionModal({ open, action, onClose, onSave }) {
       actionId: action?.actionId || new Date().getTime().toString(),
       actionName: tempActionName || '新アクション',
       actionType: selectedOperation ? 'operation' : 'app',
-      actionCategory: selectedOperation ? selectedOperation : selectedApp,
+      actionCategory: selectedOperation
+        ? selectedOperation.operationCategory
+        : selectedApp.appCategory,
       actionStatus: action?.actionStatus || 'draft',
       actionCreatedAt: action?.actionCreatedAt || new Date().toISOString().split('T')[0],
-      actionAPI: action?.actionAPI || '',
+      actionAPI: selectedOperation ? selectedOperation.apiURL : selectedApp.apiURL,
       outputURL: action?.outputURL || '',
       actionConfig: tempConfig,
     };
@@ -139,13 +189,16 @@ export default function ActionModal({ open, action, onClose, onSave }) {
 
   // stage=2 のレンダリング部分に追加するため、一例として「getSelectedConfigComponent」を定義
   function getSelectedConfigComponent(operation, app) {
+    const opCategory = operation ? operation.operationCategory : '';
+    const appCategory = app ? app.appCategory : '';
+    
     // まずアクション用マップで探す
-    const FoundOperationComponent = operationConfigMap[operation] || null;
+    const FoundOperationComponent = operationConfigMap[opCategory] || null;
     if (FoundOperationComponent) {
       return FoundOperationComponent;
     }
-    // 見つからなかった場合はアプリ用マップを探す（必要に応じて順番を逆にしたり、お好みで調整）
-    const FoundAppComponent = appConfigMap[app] || null;
+    // 見つからなかった場合はアプリ用マップを探す
+    const FoundAppComponent = appConfigMap[appCategory] || null;
     return FoundAppComponent;
   }
 
@@ -160,20 +213,20 @@ export default function ActionModal({ open, action, onClose, onSave }) {
             </Typography>
             <Typography variant="subtitle1">オペレーション</Typography>
             <List>
-              {operationList.map((operationName) => (
-                <ListItem key={operationName} disablePadding>
-                  <ListItemButton onClick={() => handleSelectOperation(operationName)}>
-                    <ListItemText primary={operationName} />
+              {operationList.map((operation) => (
+                <ListItem key={operation.operationName} disablePadding>
+                  <ListItemButton onClick={() => handleSelectOperation(operation)}>
+                    <ListItemText primary={operation.operationName} />
                   </ListItemButton>
                 </ListItem>
               ))}
             </List>
             <Typography variant="subtitle1">アプリ</Typography>
             <List>
-              {appList.map((appName) => (
-                <ListItem key={appName} disablePadding>
-                  <ListItemButton onClick={() => handleSelectApp(appName)}>
-                    <ListItemText primary={appName} />
+              {appList.map((app) => (
+                <ListItem key={app.appName} disablePadding>
+                  <ListItemButton onClick={() => handleSelectApp(app)}>
+                    <ListItemText primary={app.appName} />
                   </ListItemButton>
                 </ListItem>
               ))}
